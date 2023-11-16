@@ -96,11 +96,11 @@ button:hover {
 }
 
 .role-user {
-  background-color: var(--feature-background-color-hover)
+  background-color: var(--feature-background-color-hover);
 }
 
 .role-assistant {
-  background-color: var(--feature-background-color-hover)
+  background-color: var(--feature-background-color-hover);
 }
 
 .input-wrapper {
@@ -112,6 +112,8 @@ button:hover {
 }
 
 .history-wrapper {
+  display: flex;
+  align-items: center;
   min-height: 4rem;
   padding: 0.5rem;
   margin-bottom: 1rem;
