@@ -108,7 +108,7 @@ const clearHistory = () => {
 };
 
 const filterMessages = (index) => {
-  updateMessagesDisplay(messages.slice(0, index + 1));
+  updateMessagesDisplay(messages.slice(0, (index + 1) * 2));
 };
 
 // This has to come after the DOMContentLoaded event listener is added
