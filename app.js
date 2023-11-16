@@ -1,8 +1,10 @@
 import getConfig from './lib/getConfig.js';
+import { botSvg, userSvg } from './avatars.js';
 
+const apiUrl = 'https://api.openai.com/v1/chat/completions';
 const messages = [];
 
-const inputButtonSubmit = () => {
+const inputButtonSubmit = async () => {
   const inputText = document.getElementById('input-text').value;
   if (!inputText) return;
 
@@ -11,8 +13,10 @@ const inputButtonSubmit = () => {
     content: inputText,
   };
   messages.push(prompt);
+
   console.log(`Submitting input: ${inputText}`);
-  fetch("https://api.openai.com/v1/chat/completions", {
+
+  const response = await fetch(apiUrl, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${apiKey}`,
@@ -29,7 +33,7 @@ const inputButtonSubmit = () => {
       console.log(data);
       const response = data.choices[0].message.content;
       messages.push({
-        role: 'bot',
+        role: 'assistant',
         content: response,
       });
     
@@ -47,7 +51,11 @@ const clearButtonSubmit = () => {
 const updateDisplay = () => {
     const display = document.getElementById('content-messages');
     display.innerHTML = messages.map((message) => {
-        return `<div class="message-wrapper role-${message.role}">${message.content}</div>`;
+        return `
+        <div class="message-wrapper role-${message.role}">
+          ${message.role === 'user' ? userSvg : botSvg}
+          ${message.content}
+        </div>`;
     }).join('');
     }
 
