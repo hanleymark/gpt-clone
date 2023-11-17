@@ -2,7 +2,7 @@
 
 ## About
 
-GPT-Clone is a simple front-end implementation for ChatGPT, specifically designed for FAC29b Unschool. This project utilizes OpenAI's API to facilitate interactive chat capabilities.
+GPT-Clone is a simple, vanilla front-end implementation for ChatGPT, specifically designed for FAC29b Unschool. This project utilizes OpenAI's API to facilitate interactive chat capabilities.
 
 ## Features
 
