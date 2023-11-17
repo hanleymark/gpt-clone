@@ -3,39 +3,35 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ChatGPT Clone</title>
+    <title>GPT Clone</title>
     <link rel="stylesheet" href="styles.css" />
-    <script type="module" src="app.js" defer></script>
   </head>
   <body>
     <main>
-    <h1>GPT-Clone</h1>
-    <section class="app">
-      <div class="column">
-        <h3 class="title">Chat Messages</h3>
-        <div class="content">
-          <div class="message-wrapper">This is an example message.</div>
+      <h1>GPT-Clone</h1>
+      <section class="app">
+        <div class="column">
+          <h3 class="title">Chat Messages</h3>
+          <div class="content" id="content-messages"></div>
+          <div class="input-wrapper">
+            <input
+              class="input-text"
+              id="input-text"
+              placeholder="Your prompt here..."
+              value=""
+            />
+            <button class="input-button" id="input-button">Go</button>
+          </div>
         </div>
-        <div class="input-wrapper">
-          <input
-            class="input-text"
-            placeholder="Your prompt here..."
-            value=""
-            onChange="onChange"
-          />
-          <button class="input-button" onClick="onClick">Go</button>
+        <div class="column">
+          <h3 class="title">History</h3>
+          <div class="content" id="content-history"></div>
+          <div class="clear-wrapper">
+            <button class="clear-button" id="clear-button">Clear</button>
+          </div>
         </div>
-      </div>
-      <div class="column">
-        <h3 class="title">History</h3>
-        <div class="content">
-          <div class="history-wrapper">This is an example history.</div>
-        </div>
-        <div class="clear-wrapper">
-        <button class="clear-button" onClick="clear">Clear</button>
-      </div>
-      </div>
-    </section>
+      </section>
     </main>
+    <script type="module" src="app.js"></script>
   </body>
 </html>
