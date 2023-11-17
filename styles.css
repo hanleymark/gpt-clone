@@ -155,7 +155,7 @@ button:hover {
 
 .content {
   height: calc(100vh - 15rem);
-  overflow-y: scroll;
+  overflow-y: auto;
   margin-bottom: 20px;
   background-color: var(--feature-background-color);
 }

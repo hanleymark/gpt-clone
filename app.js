@@ -5,8 +5,12 @@ const apiUrl = 'https://api.openai.com/v1/chat/completions';
 const messages = [];
 const history = [];
 
+const inputButton = document.querySelector('#input-button');
+const clearButton = document.querySelector('#clear-button');
+const inputTextField = document.getElementById('input-text');
+
 const inputButtonSubmit = async () => {
-  const inputText = document.getElementById('input-text').value;
+  const inputText = inputTextField.value.trim();
   if (!inputText) return;
 
   const prompt = {
@@ -14,6 +18,9 @@ const inputButtonSubmit = async () => {
     content: inputText,
   };
   messages.push(prompt);
+  updateMessagesDisplay(messages);
+  inputTextField.value = '';
+  inputTextField.focus();
 
   console.log(`Submitting input: ${inputText}`);
 
@@ -48,11 +55,20 @@ const inputButtonSubmit = async () => {
     })
     .catch((error) => {
       console.error('Error:', error);
+      alert('There was an error. Please try again.');
+      const lastMessage = messages.pop();
+      updateMessagesDisplay(messages);
+      inputTextField.value = lastMessage.content;
     });
 };
 
 const clearButtonSubmit = () => {
-  console.log('Clear button pressed');
+  const verify = confirm('Are you sure you want to clear the chat history?');
+  if (!verify) return;
+  messages.length = 0;
+  history.length = 0;
+  updateMessagesDisplay(messages);
+  updateHistoryDisplay(history);
 };
 
 const updateMessagesDisplay = (messages) => {
@@ -65,6 +81,7 @@ const updateMessagesDisplay = (messages) => {
     messageElement.className = `message-wrapper role-${message.role}`;
     display.appendChild(messageElement);
   });
+  display.scrollTop = display.scrollHeight;
 };
 
 const updateHistoryDisplay = (history) => {
@@ -73,7 +90,10 @@ const updateHistoryDisplay = (history) => {
 
   history.forEach((item, index) => {
     const historyElement = document.createElement('div');
-    const historyItemText = item.question.length > 24 ? `${item.question.substring(0, 21)}...` : item.question;
+    const historyItemText =
+      item.question.length > 24
+        ? `${item.question.substring(0, 21)}...`
+        : item.question;
     historyElement.innerHTML = `${index + 1} ${historyItemText}`;
     historyElement.className = 'history-wrapper';
     historyElement.itemIndex = index;
@@ -81,30 +101,39 @@ const updateHistoryDisplay = (history) => {
       filterMessages(e.target.itemIndex);
     });
     display.appendChild(historyElement);
+    display.scrollTop = display.scrollHeight;
   });
 };
 
 document.addEventListener('DOMContentLoaded', () => {
-  const inputButton = document.querySelector('#input-button');
-  const clearButton = document.querySelector('#clear-button');
   if (inputButton) {
     inputButton.addEventListener('click', inputButtonSubmit);
   }
   if (clearButton) {
     clearButton.addEventListener('click', clearButtonSubmit);
   }
+  if(inputTextField) {
+    inputTextField.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        inputButtonSubmit();
+      }
+    });
+  }
+  inputTextField.focus();
 });
 
 const clearMessages = () => {
   document
     .querySelectorAll('.message-wrapper')
     .forEach((element) => element.remove());
+  inputTextField.focus();
 };
 
 const clearHistory = () => {
   document
     .querySelectorAll('.history-wrapper')
     .forEach((element) => element.remove());
+  inputTextField.focus();
 };
 
 const filterMessages = (index) => {
