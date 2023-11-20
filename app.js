@@ -38,7 +38,8 @@ const inputButtonSubmit = async () => {
     inputTextField.value = lastMessage.content;
     inputTextField.disabled = false;
     inputButton.disabled = false;
-  }, 25000);
+    inputTextField.focus();
+  }, 60000);
 
   const response = await fetch(apiUrl, {
     method: 'POST',
@@ -74,6 +75,7 @@ const inputButtonSubmit = async () => {
       updateHistoryDisplay(history);
       inputTextField.disabled = false;
       inputButton.disabled = false;
+      inputTextField.focus();
     })
     .catch((error) => {
       if (error.name === 'AbortError') {
