@@ -46,6 +46,10 @@ button:hover {
   cursor: pointer;
 }
 
+button:disabled {
+  cursor: not-allowed;
+}
+
 .input-text {
   background-color: var(--input-background-color);
   color: var(--input-text-color);
@@ -60,6 +64,10 @@ button:hover {
 
 .input-button:hover {
   background-color: var(--submit-button-color-hover);
+}
+
+.input-button:disabled {
+  background-color: var(--submit-button-color);
 }
 
 .clear-button {
