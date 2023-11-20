@@ -9,6 +9,10 @@ const inputButton = document.querySelector('#input-button');
 const clearButton = document.querySelector('#clear-button');
 const inputTextField = document.getElementById('input-text');
 
+const controller = new AbortController();
+const signal = controller.signal;
+let timeoutId;
+
 const inputButtonSubmit = async () => {
   const inputText = inputTextField.value.trim();
   if (!inputText) return;
@@ -17,15 +21,28 @@ const inputButtonSubmit = async () => {
     role: 'user',
     content: inputText,
   };
+
   messages.push(prompt);
   updateMessagesDisplay(messages);
   inputTextField.value = '';
-  inputTextField.focus();
+  inputTextField.disabled = true;
+  inputButton.disabled = true;
 
   console.log(`Submitting input: ${inputText}`);
 
+  timeoutId = setTimeout(() => {
+    controller.abort();
+    alert('The request timed out. Please try again.');
+    const lastMessage = messages.pop();
+    updateMessagesDisplay(messages);
+    inputTextField.value = lastMessage.content;
+    inputTextField.disabled = false;
+    inputButton.disabled = false;
+  }, 25000);
+
   const response = await fetch(apiUrl, {
     method: 'POST',
+    signal: signal,
     headers: {
       Authorization: `Bearer ${apiKey}`,
       'Content-Type': 'application/json',
@@ -38,6 +55,9 @@ const inputButtonSubmit = async () => {
   })
     .then((response) => response.json())
     .then((data) => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
       console.log(data);
       const response = data.choices[0].message.content;
       messages.push({
@@ -52,23 +72,43 @@ const inputButtonSubmit = async () => {
 
       updateMessagesDisplay(messages);
       updateHistoryDisplay(history);
+      inputTextField.disabled = false;
+      inputButton.disabled = false;
     })
     .catch((error) => {
-      console.error('Error:', error);
-      alert('There was an error. Please try again.');
-      const lastMessage = messages.pop();
-      updateMessagesDisplay(messages);
-      inputTextField.value = lastMessage.content;
+      if (error.name === 'AbortError') {
+        console.log('Fetch aborted due to timeout');
+      } else {
+        console.error('Fetch error:', error);
+        const lastMessage = messages.pop();
+        updateMessagesDisplay(messages);
+        inputTextField.value = lastMessage.content;
+        inputTextField.disabled = false;
+        inputButton.disabled = false;
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+        }
+        alert('There was a fetch error. Please try again.');
+      }
     });
 };
 
 const clearButtonSubmit = () => {
-  const verify = confirm('Are you sure you want to clear the chat history?');
+  const verify = confirm(
+    'Are you sure you want to clear the chat history? This will also abort pending requests.'
+  );
   if (!verify) return;
+  controller.abort();
+  if (timeoutId) {
+    clearTimeout(timeoutId);
+  }
   messages.length = 0;
   history.length = 0;
   updateMessagesDisplay(messages);
   updateHistoryDisplay(history);
+  inputTextField.disabled = false;
+  inputButton.disabled = false;
+  inputTextField.focus();
 };
 
 const updateMessagesDisplay = (messages) => {
@@ -112,7 +152,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (clearButton) {
     clearButton.addEventListener('click', clearButtonSubmit);
   }
-  if(inputTextField) {
+  if (inputTextField) {
     inputTextField.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') {
         inputButtonSubmit();
@@ -143,4 +183,4 @@ const filterMessages = (index) => {
 // This has to come after the DOMContentLoaded event listener is added
 // otherwise the 'await' may cause the DOMContentLoaded event to be missed
 const config = await getConfig();
-const apiKey = config?.OPEN_AI_KEY;
+const apiKey = config?.FAC_OPEN_AI_KEY;
