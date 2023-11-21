@@ -9,13 +9,16 @@ const inputButton = document.querySelector('#input-button');
 const clearButton = document.querySelector('#clear-button');
 const inputTextField = document.getElementById('input-text');
 
-const controller = new AbortController();
-const signal = controller.signal;
+let requestController;
+let signal;
 let timeoutId;
 
 const inputButtonSubmit = async () => {
   const inputText = inputTextField.value.trim();
   if (!inputText) return;
+
+  requestController = new AbortController();
+  signal = requestController.signal;
 
   const prompt = {
     role: 'user',
@@ -31,7 +34,7 @@ const inputButtonSubmit = async () => {
   console.log(`Submitting input: ${inputText}`);
 
   timeoutId = setTimeout(() => {
-    controller.abort();
+    requestController.abort();
     alert('The request timed out. Please try again.');
     const lastMessage = messages.pop();
     updateMessagesDisplay(messages);
@@ -41,58 +44,60 @@ const inputButtonSubmit = async () => {
     inputTextField.focus();
   }, 60000);
 
-  const response = fetch(apiUrl, {
-    method: 'POST',
-    signal: signal,
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      model: 'gpt-3.5-turbo',
-      messages: messages,
-      stream: false,
-    }),
-  })
-    .then((response) => response.json())
-    .then((data) => {
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-      }
-      console.log(data);
-      const response = data.choices[0].message.content;
-      messages.push({
-        role: 'assistant',
-        content: response,
-      });
+  try {
+    const response = await fetch(apiUrl, {
+      method: 'POST',
+      signal: signal,
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'gpt-3.5-turbo',
+        messages: messages,
+        stream: false,
+      }),
+    });
+    const data = await response.json();
 
-      history.push({
-        question: inputText,
-        answer: response,
-      });
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
 
+    console.log(data);
+
+    const answer = data.choices[0].message.content;
+
+    messages.push({
+      role: 'assistant',
+      content: answer,
+    });
+
+    history.push({
+      question: inputText,
+      answer: answer,
+    });
+
+    updateMessagesDisplay(messages);
+    updateHistoryDisplay(history);
+    inputTextField.disabled = false;
+    inputButton.disabled = false;
+    inputTextField.focus();
+  } catch (error) {
+    if (error.name === 'AbortError') {
+      console.log('Fetch aborted');
+    } else {
+      console.error('Fetch error:', error);
+      const lastMessage = messages.pop();
       updateMessagesDisplay(messages);
-      updateHistoryDisplay(history);
+      inputTextField.value = lastMessage.content;
       inputTextField.disabled = false;
       inputButton.disabled = false;
-      inputTextField.focus();
-    })
-    .catch((error) => {
-      if (error.name === 'AbortError') {
-        console.log('Fetch aborted due to timeout');
-      } else {
-        console.error('Fetch error:', error);
-        const lastMessage = messages.pop();
-        updateMessagesDisplay(messages);
-        inputTextField.value = lastMessage.content;
-        inputTextField.disabled = false;
-        inputButton.disabled = false;
-        if (timeoutId) {
-          clearTimeout(timeoutId);
-        }
-        alert('There was a fetch error. Please try again.');
-      }
-    });
+    }
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
+  }
 };
 
 const clearButtonSubmit = () => {
@@ -100,8 +105,10 @@ const clearButtonSubmit = () => {
     'Are you sure you want to clear the chat history? This will also abort pending requests.'
   );
   if (!verify) return;
-  controller.abort();
+  requestController.abort();
   if (timeoutId) {
+    console.log(`${`Timeout ${timeoutId} cleared`}`);
+    
     clearTimeout(timeoutId);
   }
   messages.length = 0;
@@ -186,4 +193,3 @@ const filterMessages = (index) => {
 // otherwise the 'await' may cause the DOMContentLoaded event to be missed
 const config = await getConfig();
 const apiKey = config?.OPEN_AI_KEY;
-
