@@ -140,10 +140,6 @@ button:disabled {
   font-weight: bold;
 }
 
-.clear-wrapper:hover {
-  background-color: var(--clear-button-color-hover);
-}
-
 .app {
   display: grid;
   grid-template-columns: auto 25%;
