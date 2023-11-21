@@ -41,7 +41,7 @@ const inputButtonSubmit = async () => {
     inputTextField.focus();
   }, 60000);
 
-  const response = await fetch(apiUrl, {
+  const response = fetch(apiUrl, {
     method: 'POST',
     signal: signal,
     headers: {
@@ -185,4 +185,5 @@ const filterMessages = (index) => {
 // This has to come after the DOMContentLoaded event listener is added
 // otherwise the 'await' may cause the DOMContentLoaded event to be missed
 const config = await getConfig();
-const apiKey = config?.FAC_OPEN_AI_KEY;
+const apiKey = config?.OPEN_AI_KEY;
+
